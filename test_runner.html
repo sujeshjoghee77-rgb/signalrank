@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SignalRank Scoring Engine - Unit Test Runner</title>
+  <link rel="stylesheet" href="css/test_runner.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="test-container">
+    <div class="header">
+      <div class="header-title">
+        <h1>SignalRank Engine Tests</h1>
+        <span class="badge-tag">Deterministic Core</span>
+      </div>
+      <div>
+        <button id="runTestsBtn" class="run-btn">
+          <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+            <path d="m11.596 8.697-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802.802 0 0 1 0 1.393z"/>
+          </svg>
+          Re-Run Unit Tests
+        </button>
+      </div>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div id="statTotal" class="stat-value" style="color: var(--accent-blue);">0</div>
+        <div class="stat-label">Total Tests</div>
+      </div>
+      <div class="stat-card">
+        <div id="statPassed" class="stat-value" style="color: var(--accent-green);">0</div>
+        <div class="stat-label">Passed</div>
+      </div>
+      <div class="stat-card">
+        <div id="statFailed" class="stat-value" style="color: var(--accent-red);">0</div>
+        <div class="stat-label">Failed</div>
+      </div>
+      <div class="stat-card">
+        <div id="statDuration" class="stat-value" style="color: var(--accent-purple);">0ms</div>
+        <div class="stat-label">Execution Time</div>
+      </div>
+    </div>
+
+    <div id="suitesContainer">
+      <!-- Test suites rendered dynamically -->
+    </div>
+
+    <a href="index.html" class="back-link">
+      <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+        <path fill-rule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z"/>
+      </svg>
+      Back to SignalRank SOC Dashboard
+    </a>
+  </div>
+
+  <script src="js/bundle/test_runner_bundle.js"></script>
+  <script>
+    async function executeTests() {
+      const container = document.getElementById('suitesContainer');
+      container.innerHTML = '<div style="color: var(--text-secondary); text-align: center; padding: 2rem;">Executing deterministic scoring test suites...</div>';
+
+      const runner = window.__STANDALONE_RUNNER__;
+      const results = await runner.runAll();
+
+      document.getElementById('statTotal').textContent = results.total;
+      document.getElementById('statPassed').textContent = results.passed;
+      document.getElementById('statFailed').textContent = results.failed;
+      document.getElementById('statDuration').textContent = `${results.durationMs}ms`;
+
+      container.innerHTML = '';
+
+      results.suites.forEach(suite => {
+        const suiteCard = document.createElement('div');
+        suiteCard.className = 'suite-card';
+
+        const isAllPassed = suite.failed === 0;
+        const badgeBg = isAllPassed ? 'rgba(16, 185, 129, 0.15)' : 'rgba(239, 68, 68, 0.15)';
+        const badgeColor = isAllPassed ? 'var(--accent-green)' : 'var(--accent-red)';
+        const badgeText = isAllPassed ? `ALL ${suite.passed} PASSED` : `${suite.failed} FAILED / ${suite.passed} PASSED`;
+
+        suiteCard.innerHTML = `
+          <div class="suite-header">
+            <span class="suite-name">${suite.name}</span>
+            <span class="suite-badge" style="background: ${badgeBg}; color: ${badgeColor}; border: 1px solid ${badgeColor}33;">
+              ${badgeText}
+            </span>
+          </div>
+          <div class="suite-tests">
+            ${suite.tests.map(test => `
+              <div class="test-item">
+                <div class="test-left">
+                  <span class="status-icon ${test.status}">
+                    ${test.status === 'passed' ? '✓' : '✗'}
+                  </span>
+                  <span class="test-name">${test.name}</span>
+                </div>
+                <span class="test-time">${test.durationMs}ms</span>
+              </div>
+              ${test.error ? `<div class="error-details"><strong>Error:</strong> ${test.error.message}</div>` : ''}
+            `).join('')}
+          </div>
+        `;
+
+        container.appendChild(suiteCard);
+      });
+
+      console.log('SignalRank Unit Test Execution Results:', results);
+      window.__TEST_RESULTS__ = results;
+    }
+
+    document.getElementById('runTestsBtn').addEventListener('click', executeTests);
+    window.addEventListener('DOMContentLoaded', executeTests);
+  </script>
+</body>
+</html>

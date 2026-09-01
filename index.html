@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SignalRank - Cybersecurity Incident Prioritization System & Explainable Priority Queue</title>
+  <meta name="description" content="Deterministic, mathematically explainable cybersecurity incident prioritization queue for Security Operations Centers (SOC).">
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- CSS Stylesheets -->
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/components.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Top SOC Navigation & Command Bar -->
+    <header class="soc-navbar">
+      <div class="brand-section">
+        <div class="logo-container">
+          <div class="logo-radar">
+            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+            </svg>
+          </div>
+          <div class="brand-name">SignalRank</div>
+        </div>
+        <span class="engine-tag">Deterministic Queue Engine</span>
+        <div id="utcLiveClock" class="font-mono" style="font-size: 0.8rem; color: var(--text-muted); margin-left: 0.5rem;">00:00:00 UTC</div>
+      </div>
+
+      <div class="nav-actions">
+        <!-- Analyze My Own Custom Security Alert Button -->
+        <button id="analyzeMyAlertBtn" class="btn-cyber custom-alert-btn" title="Analyze and prioritize your own custom security alert or raw log">
+          <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+          </svg>
+          <strong>+ Analyze My Alert</strong>
+        </button>
+
+        <!-- Live Alert Ingestion Simulator -->
+        <button id="simulateAlertBtn" class="btn-cyber danger-glow" title="Simulate real-time ingestion of a new high-priority security alert">
+          <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+          </svg>
+          Simulate Alert Ingestion
+        </button>
+
+        <!-- Weight Sensitivity Tuner Button -->
+        <button id="openWeightTunerBtn" class="btn-cyber" title="Adjust factor weights and test what-if scenarios">
+          <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/>
+          </svg>
+          Tune Weights
+        </button>
+
+        <!-- Export CSV Button -->
+        <button id="exportCsvBtn" class="btn-cyber" title="Export Priority Queue to CSV">
+          <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+          </svg>
+          Export CSV
+        </button>
+
+        <!-- Export JSON Button -->
+        <button id="exportJsonBtn" class="btn-cyber" title="Export Priority Queue to JSON">
+          <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/>
+          </svg>
+          JSON
+        </button>
+
+        <!-- Scoring Method Button -->
+        <button id="openScoringMethodBtn" class="btn-cyber" title="Inspect deterministic scoring model, normalization, and tie-breaking hierarchy">
+          <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          Scoring Method
+        </button>
+
+        <!-- Unit Tests Link -->
+        <a href="test_runner.html" class="btn-cyber primary" target="_blank" title="Open Scoring Engine Unit Test Suite">
+          <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          Unit Tests (35+ Passed)
+        </a>
+      </div>
+    </header>
+
+    <!-- Main SOC Operations Dashboard -->
+    <main class="dashboard-main">
+      <!-- Section 1: Real-time Telemetry & Queue Analytics Bar -->
+      <section class="metrics-container" id="analyticsBarContainer">
+        <!-- Analytics bar rendered dynamically -->
+      </section>
+
+      <!-- Section 2: Filter, Search & Operations Control Bar -->
+      <section class="toolbar-panel">
+        <div class="toolbar-left">
+          <!-- Search Box -->
+          <div class="search-box-wrapper">
+            <svg class="search-icon" width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+            </svg>
+            <input type="text" id="searchInput" class="search-input" placeholder="Search by Incident ID, Asset, Threat, MITRE..." />
+          </div>
+
+          <!-- Priority Tier Filter Pills -->
+          <div class="tier-filter-pills">
+            <button class="tier-filter-pill active" data-tier="ALL">All Tiers</button>
+            <button class="tier-filter-pill" data-tier="P1">P1 Critical</button>
+            <button class="tier-filter-pill" data-tier="P2">P2 High</button>
+            <button class="tier-filter-pill" data-tier="P3">P3 Med</button>
+            <button class="tier-filter-pill" data-tier="P4">P4 Low</button>
+          </div>
+
+          <!-- Alert Type Filter -->
+          <select id="typeFilterSelect" class="select-filter">
+            <option value="ALL">All Threat Categories</option>
+          </select>
+
+          <!-- Status Filter -->
+          <select id="statusFilterSelect" class="select-filter">
+            <option value="ALL">All Statuses</option>
+            <option value="New">New</option>
+            <option value="Investigating">Investigating</option>
+            <option value="Contained">Contained</option>
+            <option value="Resolved">Resolved</option>
+            <option value="Suppressed">Suppressed</option>
+          </select>
+        </div>
+
+        <div class="toolbar-right">
+          <span id="filteredCountBadge" class="count-indicator font-mono">Showing 105 incidents</span>
+        </div>
+      </section>
+
+      <!-- Section 3: The Primary Priority Queue Table -->
+      <section class="queue-table-card">
+        <div class="table-responsive">
+          <table class="queue-table">
+            <thead>
+              <tr>
+                <th class="col-rank">Rank</th>
+                <th class="col-id">Incident ID</th>
+                <th class="col-type">Alert Type</th>
+                <th class="col-desc">Short Description</th>
+                <th class="col-score">Risk Score</th>
+                <th class="col-sev">Severity</th>
+                <th class="col-asset">Asset</th>
+                <th class="col-cnf">Confidence</th>
+                <th class="col-users">Affected Users</th>
+                <th class="col-priority">Priority</th>
+              </tr>
+            </thead>
+            <tbody id="queueTableBody">
+              <!-- Queue rows rendered dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+
+    <!-- Slide-out Mathematical Explainability Drawer -->
+    <aside class="explainability-drawer" id="explainabilityDrawer" aria-label="Incident Explainability Inspector">
+      <!-- Content populated dynamically -->
+    </aside>
+
+    <!-- Modal Container for Side-by-Side Incident Comparison -->
+    <div id="comparisonModalContainer" style="display: none;"></div>
+
+    <!-- Modal Container for Dynamic Weight Sensitivity Tuner -->
+    <div id="tunerModalContainer" style="display: none;"></div>
+
+    <!-- Modal Container for Automated Incident Report Generator -->
+    <div id="reportModalContainer" style="display: none;"></div>
+
+    <!-- Modal Container for Scoring Method & Model Architecture -->
+    <div id="scoringMethodModalContainer" style="display: none;"></div>
+
+    <!-- Modal Container for Custom User Alert Ingestion & Analysis -->
+    <div id="customAlertModalContainer" style="display: none;"></div>
+  </div>
+
+  <!-- Application Bootstrap -->
+  <script type="module" src="js/main.js?v=2.1.0"></script>
+</body>
+</html>
